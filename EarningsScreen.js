@@ -23,9 +23,13 @@ export default function EarningsScreen({ navigation, route }) {
   async function load() {
     try {
       const data = await getOrders();
-      const available = data.filter(o =>
-        ['pending', 'preparing', 'ready', 'driver_accepted'].includes(o.status)
-      );
+
+      const available = Array.isArray(data)
+        ? data.filter(o =>
+            ['pending', 'preparing', 'ready', 'driver_accepted'].includes(o.status)
+          )
+        : [];
+
       setOrders(available);
     } catch (e) {
       Alert.alert('Erro', 'Não foi possível buscar pedidos da API.');
@@ -105,7 +109,7 @@ export default function EarningsScreen({ navigation, route }) {
 
             <TouchableOpacity
               style={styles.yellowBtn}
-              onPress={() => navigation.navigate('Order', { id: first.id, themeMode })}
+              onPress={() => navigation.navigate('Home', { themeMode })}
             >
               <Text style={styles.yellowBtnText}>Ver pedido</Text>
             </TouchableOpacity>
@@ -142,10 +146,7 @@ export default function EarningsScreen({ navigation, route }) {
 
 function makeStyles(c) {
   return StyleSheet.create({
-    page: {
-      flex: 1,
-      backgroundColor: c.bg,
-    },
+    page: { flex: 1, backgroundColor: c.bg },
     topbar: {
       height: 110,
       paddingTop: 42,
@@ -161,10 +162,7 @@ function makeStyles(c) {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    menuText: {
-      fontSize: 34,
-      color: c.text,
-    },
+    menuText: { fontSize: 34, color: c.text },
     online: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -186,10 +184,7 @@ function makeStyles(c) {
       fontWeight: '800',
       color: c.text,
     },
-    map: {
-      flex: 1,
-      backgroundColor: c.map,
-    },
+    map: { flex: 1, backgroundColor: c.map },
     badge: {
       position: 'absolute',
       top: 150,
