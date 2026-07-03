@@ -1,19 +1,14 @@
-export function palette(mode = 'light') {
-  const light = mode === 'light';
-  return {
-    mode,
-    bg: light ? '#f7f7f7' : '#0d0d0f',
-    card: light ? '#ffffff' : '#1c1c1f',
-    card2: light ? '#f2f2f2' : '#29292c',
-    text: light ? '#111111' : '#ffffff',
-    muted: light ? '#676767' : '#a9a9a9',
-    line: light ? '#e8e8e8' : '#333333',
-    yellow: '#ffcc00',
-    green: '#18b957',
-    red: '#ef4444',
-    map: light ? '#eef1ef' : '#17202b',
-  };
+{
+  "expo": {
+    "name": "ChamaBebidas Entregador",
+    "slug": "chamabebidas-entregador",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": { "image": "./assets/splash.png", "resizeMode": "contain", "backgroundColor": "#ffffff" },
+    "assetBundlePatterns": ["**/*"],
+    "android": { "package": "com.chamabebidas.entregador", "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#ffffff" } },
+    "plugins": []
+  }
 }
-
-export const money = (value) =>
-  Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

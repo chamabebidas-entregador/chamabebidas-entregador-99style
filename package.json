@@ -1,29 +1,30 @@
-import 'react-native-gesture-handler';
-import React, { useMemo } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
-import HomeScreen from './src/screens/HomeScreen';
-import OrderScreen from './src/screens/OrderScreen';
-import EarningsScreen from './src/screens/EarningsScreen';
-
-const Stack = createNativeStackNavigator();
-
-function isDayTime() {
-  const h = new Date().getHours();
-  return h >= 6 && h < 18;
-}
-
-export default function App() {
-  const themeMode = useMemo(() => (isDayTime() ? 'light' : 'dark'), []);
-  return (
-    <NavigationContainer>
-      <StatusBar style={themeMode === 'light' ? 'dark' : 'light'} />
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} initialParams={{ themeMode }} />
-        <Stack.Screen name="Order" component={OrderScreen} initialParams={{ themeMode }} />
-        <Stack.Screen name="Earnings" component={EarningsScreen} initialParams={{ themeMode }} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+{
+  "name": "chamabebidas-entregador",
+  "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@react-navigation/bottom-tabs": "^6.5.20",
+    "@react-navigation/native": "^6.1.17",
+    "@react-navigation/native-stack": "^6.9.26",
+    "expo": "~54.0.0",
+    "expo-location": "~19.0.0",
+    "expo-status-bar": "~3.0.0",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-maps": "1.20.1",
+    "react-native-reanimated": "~4.1.0",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2"
+  },
+  "private": true
 }

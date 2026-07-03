@@ -1,58 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, ScrollView } from 'react-native';
-import { getOrders, updateOrder } from '../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Alert } from 'react-native';
+import MapView, { Marker, Circle } from 'react-native-maps';
+import { getOrders } from '../services/api';
 import { palette, money } from '../components/styles';
 
-export default function OrderScreen({ navigation, route }) {
+export default function HomeScreen({ navigation, route }) {
   const themeMode = route.params?.themeMode || 'light';
-  const id = route.params?.id;
   const c = palette(themeMode);
   const styles = makeStyles(c);
-  const [order, setOrder] = useState(null);
-  const [pin, setPin] = useState('');
-  const [code, setCode] = useState('');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   async function load() {
-    const data = await getOrders();
-    setOrder(data.find(o => o.id === id) || data[0]);
+    try {
+      const data = await getOrders();
+      const available = data.filter(o => ['pending', 'preparing', 'ready', 'driver_accepted'].includes(o.status));
+      setOrders(available);
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível buscar pedidos da API.');
+    } finally { setLoading(false); }
   }
-  useEffect(() => { load().catch(() => Alert.alert('Erro', 'Pedido não encontrado')); }, []);
+  useEffect(() => { load(); const t = setInterval(load, 15000); return () => clearInterval(t); }, []);
 
-  async function accept() {
-    const updated = await updateOrder(order.id, { status: 'driver_accepted' });
-    setOrder(updated);
-    Alert.alert('Sucesso', 'Entrega aceita.');
-  }
-  async function pickup() {
-    if (pin !== String(order.pinRetirada)) return Alert.alert('Código inválido', 'PIN da adega incorreto.');
-    const updated = await updateOrder(order.id, { status: 'picked_up' });
-    setOrder(updated);
-    Alert.alert('Retirada confirmada', 'Agora siga para o cliente.');
-  }
-  async function deliver() {
-    if (code !== String(order.deliveryCode)) return Alert.alert('Código inválido', 'Código do cliente incorreto.');
-    await updateOrder(order.id, { status: 'delivered' });
-    Alert.alert('Finalizado', 'Pedido entregue com sucesso.');
-    navigation.navigate('Earnings', { themeMode });
-  }
-
-  if (!order) return <View style={styles.page}><Text style={styles.title}>Carregando...</Text></View>;
-  const items = order.items || [];
-  return <ScrollView style={styles.page} contentContainerStyle={{ paddingBottom: 40 }}>
-    <View style={styles.header}><TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.close}>×</Text></TouchableOpacity><Text style={styles.headTitle}>Novo pedido</Text><View style={{width:30}} /></View>
-    <View style={styles.container}>
-      <View style={styles.rowBetween}><Text style={styles.yellowText}>Entrega • ChamaBebidas</Text><Text style={styles.timer}>Aceitar</Text></View>
-      <Text style={styles.price}>{money(order.total)}</Text>
-      <Text style={styles.sub}>Status: {order.status}</Text>
-      <InfoCard dot={c.yellow} title="Adega" name={order.storeName || 'Adega'} desc={`Pedido ${order.id}`} c={c} styles={styles} />
-      <InfoCard dot={c.green} title="Cliente" name={order.customerName || 'Cliente'} desc={order.address || 'Endereço não informado'} c={c} styles={styles} />
-      <View style={styles.card}><Text style={styles.cardTitle}>Itens</Text>{items.map((it, i) => <Text key={i} style={styles.item}>{it.quantity}x {it.name} • {money(it.price)}</Text>)}</View>
-      {['pending','preparing','ready'].includes(order.status) && <TouchableOpacity style={styles.yellowBtn} onPress={accept}><Text style={styles.btnText}>Aceitar pedido</Text></TouchableOpacity>}
-      {order.status === 'driver_accepted' && <View style={styles.card}><Text style={styles.cardTitle}>Código da adega</Text><TextInput value={pin} onChangeText={setPin} keyboardType="numeric" placeholder="PIN de retirada" placeholderTextColor={c.muted} style={styles.input}/><TouchableOpacity style={styles.yellowBtn} onPress={pickup}><Text style={styles.btnText}>Confirmar retirada</Text></TouchableOpacity></View>}
-      {order.status === 'picked_up' && <View style={styles.card}><Text style={styles.cardTitle}>Código do cliente</Text><TextInput value={code} onChangeText={setCode} keyboardType="numeric" placeholder="Código de entrega" placeholderTextColor={c.muted} style={styles.input}/><TouchableOpacity style={styles.yellowBtn} onPress={deliver}><Text style={styles.btnText}>Finalizar entrega</Text></TouchableOpacity></View>}
-      <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.refuse}>Voltar</Text></TouchableOpacity>
+  const first = orders[0];
+  return <View style={styles.page}>
+    <View style={styles.topbar}>
+      <TouchableOpacity style={styles.menu}><Text style={styles.menuText}>☰</Text></TouchableOpacity>
+      <View style={styles.online}><Text style={styles.onlineText}>Online</Text><View style={styles.dot} /></View>
+      <TouchableOpacity onPress={() => navigation.navigate('Earnings', { themeMode })}><Text style={styles.bell}>R$</Text></TouchableOpacity>
     </View>
-  </ScrollView>
+    <MapView style={styles.map} initialRegion={{ latitude: -23.3557, longitude: -47.8569, latitudeDelta: 0.08, longitudeDelta: 0.08 }}>
+      <Circle center={{ latitude: -23.3557, longitude: -47.8569 }} radius={900} strokeColor="rgba(255,204,0,.65)" fillColor="rgba(255,204,0,.22)" />
+      <Circle center={{ latitude: -23.34, longitude: -47.88 }} radius={650} strokeColor="rgba(255,204,0,.65)" fillColor="rgba(255,204,0,.20)" />
+      <Marker coordinate={{ latitude: -23.3557, longitude: -47.8569 }} title="Você" />
+    </MapView>
+    <View style={styles.badge}><Text style={styles.badgeIcon}>▮▮▮</Text><Text style={styles.badgeText}>Região com mais pedidos</Text></View>
+    <View style={styles.sheet}>
+      {loading ? <ActivityIndicator /> : first ? <>
+        <Text style={styles.sheetTitle}>Pedido disponível</Text>
+        <Text style={styles.sheetSub}>{first.storeName || 'Adega'} • {money(first.total)}</Text>
+        <TouchableOpacity style={styles.yellowBtn} onPress={() => navigation.navigate('Order', { id: first.id, themeMode })}><Text style={styles.yellowBtnText}>Ver pedido</Text></TouchableOpacity>
+      </> : <>
+        <View style={styles.searchCircle}><Text style={styles.search}>⌕</Text></View>
+        <Text style={styles.sheetTitle}>Procurando pedidos</Text>
+        <Text style={styles.sheetSub}>Fique atento, você será notificado quando surgir um pedido.</Text>
+      </>}
+      <View style={styles.tabs}>
+        <TouchableOpacity><Text style={[styles.tab, { color: c.yellow }]}>⌂\nInício</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Earnings', { themeMode })}><Text style={styles.tab}>$\nGanhos</Text></TouchableOpacity>
+        <Text style={styles.tab}>▮\nDesempenho</Text><Text style={styles.tab}>●\nConta</Text>
+      </View>
+    </View>
+  </View>
 }
-function InfoCard({ dot, title, name, desc, styles }){return <View style={styles.card}><View style={{flexDirection:'row',gap:12}}><View style={[styles.dot,{backgroundColor:dot}]} /><View style={{flex:1}}><Text style={styles.cardTitle}>{title}</Text><Text style={styles.name}>{name}</Text><Text style={styles.desc}>{desc}</Text></View><Text style={styles.phone}>☎</Text></View></View>}
-function makeStyles(c){return StyleSheet.create({page:{flex:1,backgroundColor:c.bg},header:{height:110,paddingTop:44,paddingHorizontal:24,flexDirection:'row',alignItems:'center',justifyContent:'space-between',backgroundColor:c.card},close:{fontSize:38,color:c.text},headTitle:{fontSize:22,fontWeight:'800',color:c.text},container:{padding:22},rowBetween:{flexDirection:'row',justifyContent:'space-between',alignItems:'center'},yellowText:{color:c.yellow,fontWeight:'700',fontSize:16},timer:{backgroundColor:'rgba(255,204,0,.18)',color:c.text,paddingHorizontal:12,paddingVertical:8,borderRadius:8,fontWeight:'800'},price:{fontSize:42,fontWeight:'900',color:c.text,marginTop:16},sub:{fontSize:17,color:c.muted,marginVertical:8},card:{backgroundColor:c.card,borderRadius:16,padding:18,marginTop:12,borderWidth:1,borderColor:c.line},dot:{width:12,height:12,borderRadius:6,marginTop:6},cardTitle:{fontSize:16,fontWeight:'700',color:c.text},name:{fontSize:17,fontWeight:'800',color:c.text,marginTop:4},desc:{fontSize:15,color:c.muted,marginTop:4},phone:{fontSize:26,color:c.text},item:{fontSize:16,color:c.text,marginTop:8},yellowBtn:{backgroundColor:c.yellow,borderRadius:14,paddingVertical:16,alignItems:'center',marginTop:20},btnText:{fontSize:20,fontWeight:'900',color:'#111'},refuse:{textAlign:'center',fontSize:17,color:c.muted,marginTop:20,fontWeight:'700'},input:{borderWidth:1,borderColor:c.line,borderRadius:12,padding:14,fontSize:18,color:c.text,marginTop:14}})}
+
+function makeStyles(c){return StyleSheet.create({page:{flex:1,backgroundColor:c.bg},topbar:{height:110,paddingTop:42,paddingHorizontal:24,flexDirection:'row',alignItems:'center',justifyContent:'space-between',backgroundColor:c.card},menu:{width:48,height:48,alignItems:'center',justifyContent:'center'},menuText:{fontSize:34,color:c.text},online:{flexDirection:'row',alignItems:'center',gap:8},onlineText:{fontSize:20,fontWeight:'700',color:c.text},dot:{width:10,height:10,borderRadius:5,backgroundColor:c.green},bell:{fontSize:18,fontWeight:'800',color:c.text},map:{flex:1,backgroundColor:c.map},badge:{position:'absolute',top:150,right:20,backgroundColor:c.card,paddingHorizontal:14,paddingVertical:10,borderRadius:10,flexDirection:'row',gap:8,elevation:4},badgeIcon:{color:c.yellow,fontWeight:'900'},badgeText:{color:c.text,fontWeight:'600'},sheet:{position:'absolute',left:0,right:0,bottom:0,backgroundColor:c.card,borderTopLeftRadius:28,borderTopRightRadius:28,padding:24,minHeight:290,alignItems:'center'},searchCircle:{width:76,height:76,borderRadius:38,backgroundColor:c.card2,alignItems:'center',justifyContent:'center',marginBottom:18},search:{fontSize:42,color:c.yellow},sheetTitle:{fontSize:24,fontWeight:'800',color:c.text,textAlign:'center'},sheetSub:{fontSize:16,color:c.muted,textAlign:'center',marginTop:10,marginBottom:18},yellowBtn:{backgroundColor:c.yellow,borderRadius:14,paddingVertical:16,paddingHorizontal:40,width:'100%',alignItems:'center'},yellowBtnText:{fontSize:18,fontWeight:'800',color:'#111'},tabs:{borderTopWidth:1,borderTopColor:c.line,marginTop:24,paddingTop:14,width:'100%',flexDirection:'row',justifyContent:'space-between'},tab:{textAlign:'center',color:c.muted,fontSize:12}})}
