@@ -3,9 +3,9 @@ import React, { useMemo } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import HomeScreen from './src/screens/HomeScreen';
-import OrderScreen from './src/screens/OrderScreen';
-import EarningsScreen from './src/screens/EarningsScreen';
+
+import HomeScreen from './HomeScreen';
+import EarningsScreen from './EarningsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,12 +16,14 @@ function isDayTime() {
 
 export default function App() {
   const themeMode = useMemo(() => (isDayTime() ? 'light' : 'dark'), []);
+
   return (
     <NavigationContainer>
       <StatusBar style={themeMode === 'light' ? 'dark' : 'light'} />
+
       <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} initialParams={{ themeMode }} />
-        <Stack.Screen name="Order" component={OrderScreen} initialParams={{ themeMode }} />
+        <Stack.Screen name="Order" component={HomeScreen} initialParams={{ themeMode }} />
         <Stack.Screen name="Earnings" component={EarningsScreen} initialParams={{ themeMode }} />
       </Stack.Navigator>
     </NavigationContainer>
