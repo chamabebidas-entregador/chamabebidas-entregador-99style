@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
-import HomeScreen from './HomeScreen';
+import HomeScreen from './HomeScreenNovo';
 import EarningsScreen from './EarningsScreen';
 
 const Stack = createNativeStackNavigator();
