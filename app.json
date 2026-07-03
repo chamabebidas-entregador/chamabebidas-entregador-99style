@@ -1,14 +1,28 @@
 {
   "expo": {
     "name": "ChamaBebidas Entregador",
-    "slug": "chamabebidas-entregador",
+    "slug": "chamabebidas-entregador-99style",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": { "image": "./assets/splash.png", "resizeMode": "contain", "backgroundColor": "#ffffff" },
-    "assetBundlePatterns": ["**/*"],
-    "android": { "package": "com.chamabebidas.entregador", "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#ffffff" } },
-    "plugins": []
+    "splash": {
+      "image": "./splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.chamabebidas.entregador",
+      "adaptiveIcon": {
+        "foregroundImage": "./adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./favicon.png"
+    }
   }
 }
