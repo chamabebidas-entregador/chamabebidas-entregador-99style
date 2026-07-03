@@ -1,31 +1,30 @@
-import 'react-native-gesture-handler';
-import React, { useMemo } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
-
-import HomeScreen from './HomeScreenNovo';
-import EarningsScreen from './EarningsScreen';
-
-const Stack = createNativeStackNavigator();
-
-function isDayTime() {
-  const h = new Date().getHours();
-  return h >= 6 && h < 18;
-}
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
 export default function App() {
-  const themeMode = useMemo(() => (isDayTime() ? 'light' : 'dark'), []);
-
   return (
-    <NavigationContainer>
-      <StatusBar style={themeMode === 'light' ? 'dark' : 'light'} />
-
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} initialParams={{ themeMode }} />
-        <Stack.Screen name="Order" component={HomeScreen} initialParams={{ themeMode }} />
-        <Stack.Screen name="Earnings" component={EarningsScreen} initialParams={{ themeMode }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      <Text style={styles.title}>APP OK</Text>
+      <Text style={styles.text}>Abriu sem cair</Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#111',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    color: '#ffcc00',
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  text: {
+    color: '#fff',
+    fontSize: 20,
+    marginTop: 10,
+  },
+});
